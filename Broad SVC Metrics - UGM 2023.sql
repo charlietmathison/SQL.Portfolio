@@ -1,0 +1,30 @@
+USE HBTSCustPerf
+
+DECLARE @Startdate date = '2023-07-01'
+DECLARE @Enddate date = '2023-08-01'
+
+SELECT
+    --MAX(cust.[Cust Name]) 'customer name'
+	GROUPER_1
+	--,SUM(svc.SVC_SUCCESSES_FOR_GROUPER)/1000000 'svc successes'
+    --,(SUM(svc.SVC_FAILURES_FOR_GROUPER) + SUM(svc.SVC_SUCCESSES_FOR_GROUPER))/1000000 'total svcd'
+	--,(SUM(svc.SVC_FAILURES_FOR_GROUPER) + SUM(svc.SVC_SUCCESSES_FOR_GROUPER)+SUM(svc.NOT_SVCD_FOR_GROUPER))/1000000 'total OP volume'
+	,SUM(svc.SVC_SUCCESSES_FOR_GROUPER)/(SUM(svc.SVC_FAILURES_FOR_GROUPER) + SUM(svc.SVC_SUCCESSES_FOR_GROUPER)) 'svc succ rate'
+	,SUM(svc.SVC_SUCCESSES_FOR_GROUPER)/(SUM(svc.SVC_FAILURES_FOR_GROUPER) + SUM(svc.SVC_SUCCESSES_FOR_GROUPER)+SUM(svc.NOT_SVCD_FOR_GROUPER)) 'svc rate'
+	--,MAX(svc.METRIC_START_DATE) as 'Metric Start Date'
+FROM [HBTSCustPerf].[dbo].[V_TS_TO_CUST] as cust
+INNER JOIN [HBTSCustPerf].[rc].[SVC_ONEPAGER] as svc
+    ON svc.OID = cust.OID
+--WHERE cust.[Cust Name] = 'Cape Fear Valley Health'
+WHERE svc.METRIC_START_DATE >= @Startdate
+	AND svc.METRIC_END_DATE <= @Enddate
+GROUP BY GROUPER_1
+--,GROUPER_2
+--,GROUPER_3
+--,GROUPER_4
+--AND svc.METRIC_START_DATE
+ORDER BY GROUPER_1
+--, GROUPER_2
+--, GROUPER_3
+--, GROUPER_4
+--AND svc.METRIC_START_DATE desc
